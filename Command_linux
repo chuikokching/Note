@@ -1,0 +1,455 @@
+查看cent OS版本
+cat /etc/redhat-release
+
+
+ ? 匹配单个字符
+ rm libby1?.jpg 
+ rm libby?.jpg
+ rm libby?.*
+
+ * 匹配多个字符
+ rm libby1*.jpg
+ rm libby*.jpg
+ rm *txt
+ rm libby*
+
+ [] 匹配一组单个字符
+ rm libby1[12].jpg
+ rm libby1[0-2].jpg
+ rm libby[6-8].jpg
+
+ ~/ (/home) 表示用户目录
+
+ls -R ~/iso 递归显示iso目录 （文件系统树形结构）
+iso:
+debian-31r0a-i386-netinst.iso knoppix ubuntu
+
+iso/knoppix:
+KNOPPIX_V4.0.2CD.iso KNOPPIX_V4.0.2DVD.iso
+
+iso/ubuntu:
+kubuntu-5.10-install.iso ubuntu-5.10-install.iso
+
+ls -1 单列显示
+
+ls -m ~/ 以逗号隔开显示 bin, Desktop, docs, iso, music, pix, src, video
+
+ls -a (--all) 查看隐藏文件 (名字前加'.',可设置成隐藏)
+
+'.': 当前目录 '..':代表上一级目录
+
+('/'代表目录, 
+ '*'代表可执行文件,
+ '@' 符号链接文件, 
+ '|' 管道（FIFO), 
+ '=' 套接字（socket))
+
+ls -F(--classify) 显示更详细的信息 
+ pop_login*  adblock_filters.txt  procmail/ 
+ls -F --color 不同颜色显示
+
+ls -l (format--long) (ls -lF --color)
+total 2951 
+-rw-r--r-- 1                  scott scott   15058  2005-10-03 18:49 
+adblock_filters.txt 
+-rwxr-xr-- 1                  scott root       33  2005-04-19 09:45 
+addext 
+-rwxr--r-- 1                  scott scott     245  2005-10-15 22:38 
+backup 
+drwxr-xr-x 9                  scott scott    1080  2005-09-22 14:42
+convertsize 
+drwxr-xr-x 2                  scott scott      48  2005-04-19 09:45 
+  权限     链接数 目录则是包含   用户   组      Size
+                  的文件数
+（1.1）
+- 普通文件 
+- 可执行文件 
+d 目录 
+l 符号链接文件 
+s 套接字（socket） 
+b 块设备（block device） 
+c 字符设备（character device） 
+p 命名管道（named pipe） 
+
+d          |  rwx     |  r-x       |    r-x
+(1.1)        用户权限    组的权限   系统其他用户的权限
+
+r:read permission
+w:write permission
+x:execute permission
+-:not permitted.
+
+ls -r (--reverse) (ls -lar ~/)
+
+ls -X (--sort==extension) 按照拓展名进行排序 (ls -lX ~/src)
+
+ls -t (--sort==time) 按照时间进行排序 (ls -latr ~/)
+
+ls -S (--sort==size) 按照文件大小排序 (ls -laS ~/)
+
+ls -h (--human==readable) 人类可读形式表示,通常用于显示文件大小
+ls -laSh ~/
+-rw-r--r--  100K 2005-10-19 11:44 .xsession-errors 
+-rw-------   40K 2005-04-20 11:00 .nessusrc
+
+pwd 查看当前所在路径
+
+cd ~ 切换到home目录
+$ pwd /home/scott/music 
+$ cd ~ 
+$ pwd /home/scott
+
+cd - 返回上一级目录 类似后退
+$ pwd /home/scott $ cd music/new $ pwd /home/scott/music/new $ cd - /home/scott 
+
+touch 修改文件访问时间 
+-rw-r--r--     239 2005-09-10 23:12 wireless.log 
+touch wireless.log
+-rw-r--r--     239 2005-10-19 14:00 wireless.log
+
+touch test.txt 可用于创建文件
+
+mkdir test 创建文件夹
+
+mkdir -p pictures/personal/family 创建多个子目录以及文件夹 (--parents)
+
+mkdir -pv pictures/personal/family (--verbose(冗长的,唠叨的))
+mkdir: created directory 'pictures' 
+mkdir: created directory 'pictures/personal' 
+mkdir: created directory 'pictures/personal/family' 
+
+复制文件
+cp libby.jpg libby_bak.jpg  
+cp pix/libby_arrowrock.jpg libby/arrowrock.jpg
+cp pix/libby_arrowrock.jpg . (复制到当前文件目录)
+cp pix/libby_on_couch.jpg libby
+cp ~/pix/by_pool_*.jpg .  
+cp ~/pix/on_floor_0[1-3].jpg . (批量操作)
+
+cp -v (verbose)
+cp -i (interactive) 防止覆盖重要文件  cp -i ~/pix/on_floor_0[1-3].jpg .  y/n
+cp -R (recursive) 复制目录    cp -R libby libby_bak
+
+scp 服务器之间传输文件
+scp -r /home/space/music/ www.runoob.com:/home/root/others/ 
+scp -r www.runoob.com:/home/root/others/ /home/space/music/
+scp -r local_folder remote_username@remote_ip:remote_folder
+
+pscp windows和linux之间传输文件
+pssh -h list.ip -i "mkdir -p pictures/personal/family" (用于多台服务器并发执行相同的命令并输出)
+-i 每个主机执行完毕后显示标准输出和标准错误
+-h host_file 从host_file文件中读取需要连接的ip信息
+
+mv on_floor_04.jpg on_floor 移动文件到文件夹
+mv liebermans/ lieberman_pool/ 重命名
+
+rm -i (interactive) 防止删除重要文件 y/n
+rm *
+rmdir 删除空目录
+rm -Rf (--recursive, --force) 
+rm -Rf lieberman_pool_bak 删除文件夹
+rm "cousin harold.jpg" 删除带有空格的文件
+rm -- -cousin_roy.jpg 删除'-'开头的文件
+
+su - (变成root,并获得root的环境变量) or su gromit (切换用户) 
+
+man page (man ls, man -k ls) 查看命令用法 命令手册 whatis, whereis, (apropos list: 搜索命令名称和描述)
+
+curl 支持文件上传和下载
+curl http://www.linux.com >> linux.html 使用linux的重定向功能保存
+curl -o linux.html http://www.linux.com 保存linux.html网页
+curl -H (传递自定义header) -X 指定什么命令 -d 用于指定发送的数据
+curl -d “userName=tom&passwd=123456” -X POST http://www.example.com/login
+curl -d '@data.txt' https://google.com/login
+上面命令读取data.txt文件的内容，作为数据体向服务器发送 
+
+curl -H “Cookie: JSESSIONID=D0112A5063D938586B659EF8F939BE24” http://www.example.com 
+curl -X PUT "localhost:9200/test" -H 'Content-Type: application/json' -d'
+{
+    "settings" : {
+        "number_of_shards" : 1
+    },
+    "mappings" : {
+        "type1" : {
+            "properties" : {
+                "field1" : { "type" : "text" }
+            }
+        }
+    }
+}
+'
+curl -X POST -H 'Content-Type: application/json' http://ccpcsp.inner.vmall.com:8080/ccpcsp/services/leaguerExtService/getLeaguerInfoForApp -d '
+{
+	"accountId":"270086000122233885",
+	"countryCode":"RU",
+	"langCode":"ru",
+	"channelCode":"WEBSITE"
+}'
+
+-k 对于https请求时可以去掉ssl的加密处理
+
+-i 获取http-response的头信息
+curl -i 'http://huaweistore:donotpanic42!@10.228.208.70:8000/eureka/apps'
+
+-L 自动转跳到新页面
+curl -L www.sina.com
+
+-x 参数指定 HTTP 请求的代理
+curl -x socks5://james:cats@myproxy.com:8080 https://www.example.com 
+上面命令指定 HTTP 请求通过myproxy.com:8080的 socks5 代理发出
+curl -x james:cats@myproxy.com:8080 https://www.example.com 
+上面命令中，请求的代理使用 HTTP 协议
+
+-v 显示通信过程
+curl -v www.sina.com
+curl --trace output.txt www.sina.com
+
+--referer 提供一个referer字段,表示从哪里来
+curl --referer www.google.com www.sina.com
+
+--cookie 可以让curl发送cookie
+curl --cookie "name=xxx" www.example.com
+`-c cookie-file`可以保存服务器返回的cookie到文件 
+curl -c cookies http://example.com
+-c参数将服务器设置的 Cookie 写入一个文件
+curl -c cookies.txt https://www.google.com 
+上面命令将服务器的 HTTP-response所设置 Cookie 写入文本文件cookies.txt
+
+
+`-b cookie-file`可以使用这个文件作为cookie信息,进行后续的请求
+curl -b cookies http://example.com
+-b参数用来向服务器发送 Cookie
+curl -b 'foo=bar' https://google.com 
+上面命令会生成一个标头Cookie: foo=bar,向服务器发送一个名为foo、值为bar的 Cookie
+curl -b 'foo1=bar;foo2=bar2' https://google.com 
+
+curl -b cookies.txt https://www.google.com
+上面命令读取本地文件cookies.txt,里面是服务器设置的 Cookie,将其发送到服务器
+
+-S参数指定只输出错误信息，通常与-o一起使用
+curl -S -o /dev/null https://google.com 
+上面命令没有任何输出，除非发生错误
+
+-A or --user-agent 自定义 User-Agent 下面的命令将伪装成安卓火狐浏览器对网页进行请求： 
+curl -A “Mozilla/5.0 (Android; Mobile; rv:35.0) Gecko/35.0 Firefox/35.0” http://www.baidu.com 
+
+dd 指定大小的块拷贝一个文件,并在拷贝的同时进行转换
+df -h 显示系统中的磁盘空间大小
+Filesystem  Size  Used  Avail Use% Mounted on 
+/dev/hda1   7.4G  5.0G  2.4G  68% / 
+tmpfs       506M     0  506M   0% /dev/shm 
+tmpfs       506M   13M  494M   3% /lib/modules/
+du -sh * | sort -nr | head
+du -sh * | sort -nr | tail
+
+# 将文件夹 abc 进行压缩时，排除1.txt，压缩后的文件名为 abc.tgz
+tar --exclude=abc/1.txt -czvf abc.tgz abc
+# 列出压缩文件内容
+tar -tzvf abc.tgz
+# 解压文件
+tar -xzvf abc.tgz
+
+gzip -dv abc.log.gz
+
+分隔命令 && 按顺序依次执行命令,前一条成功了再执行下一条
+unzip /home/scott/JohnColtrane.zip && 
+mkdir -p /home/scott/music/coltrane && 
+mv /home/scott/music/JohnColtrane.*mp3 /home/scott/music/coltrane/ && 
+rm /home/scott/music/JohnColtrane.zip
+
+|| 依次执行,前一条失败了才执行下一条
+ping -c 1 -w 15 -n 72.14.203.104 || {  echo “Server down” | mail -s 'Server down' admin@google.com }
+
+替换命令 $()
+mkdir $(date '+%Y-%m-%d') #2020-10-27
+
+cat 拼接
+cat 文件路径 | grep XXXX > temp.log #常用 实用
+cat text.txt #打印txt到输出设备上
+cat -n text1.txt text2.txt #拼接并且输出 (带行号)
+
+> 重定向到文件(如果文件不存在,新创建一个 否则覆盖文件)
+cat -n text1.txt > text2.txt #文档内容加上行号后输出到text2
+
+>> 输出追加到文件 (不覆盖 追加到底部)
+$ cat hank_mobley.txt 
+Mon Nov 21 21:33:58 CST 2005 
+$ ls -1F Hank_Mobley/* >> hank_mobley.txt 
+$ cat hank_mobley.txt 
+Mon Nov 21 21:33:58 CST 2005 
+1958_Peckin'_Time/ 
+1960_Roll_Call/ 
+
+< 文件作为命令输入
+echo < hank_mobley.txt
+Mon Nov 21 21:33:58 CST 2005 
+1958_Peckin'_Time/ 
+1960_Roll_Call/ 
+
+less -N Paradise_Lost.txt (查看长文件,更多功能用到再搜索)
+键盘命令                 操  作
+ PageDn、e或空格键      前进一页 
+ PageUp或b             后退一页 
+ Return、e、j或下箭头键 前进一行 
+ y、k或上箭头键         后退一行 
+ G或p                  前进到文件的结尾 
+ 1G                    回到文件的开始 
+ Esc-）或右箭头键       向右滚动 
+ Esc-（或左箭头键       向左滚动 
+ Q                      退出less 
+
+ head 查看文件前10行
+ head text1.txt text2.txt
+ 查看文件前5行的内容
+ head -n 5 text1.txt text2.txt
+ 查看文件前100k的内容
+ head -c 100k text1.txt text2.txt
+
+ tail 查看文件后10行(用法和head类似)
+ tail -f text1.txt 循环读取查看
+
+ chgrp 修改文件用户组权限
+ $ touch new_script.sh 
+ $ ls -l -rw-r--r-- 1 scott scott ... script.sh
+ $ chgrp admins new_script.sh 
+ $ ls -l -rw-r--r-- 1 scott admins ... script.sh 
+
+chmod 修改权限 (u:所有者, g:group, o:other, +:增加权限, -:减少权限)
+-rw-r--r-- 1 scott family ... libby.jpg 
+chmod g+w libby.jpg
+-rw-rw-r-- 1 scott family ... libby.jpg 
+
+-rw-r--r-- 1 scott family ... libby.jpg
+chmod go+w libby.jpg
+-rw-rw-rw- 1 scott family ... libby.jpg 
+
+-rw-r--r-- 1 scott family ... libby.jpg 
+chmod a=rw libby.jpg
+-rw-rw-rw- 1 scott family ... libby.jpg
+
+修改ownership 属主设置为tomcat, 属组设置为tomcat
+chown -R tomcat:tomcat ./*
+chown -R tomcat:tomcat /tmp/properties
+
+登录数据库
+mysql -h 0.0.0.0 -uroot -P3306 -p密码
+
+wc -l 查看行数 ls | wc -l
+查看全格式的全部进程
+ps -ef | grep XXX
+显示所有进程,包括用户及其他详细信息,和没有控制终端的进程
+ps -aux | grep XXX
+
+userdel -r XXX(用户名)
+useradd XXX(用户名)
+
+1.针对切换tomcat用户not available 
+su - tomcat
+cat /etc/passwd
+tomcat nologin
+userdel -r tomcat
+删除用户并且和用户相关所有文件,如果有些无法删除,则需要手动删除 否则无法重新新建用户
+useradd tomcat 重新新建
+再对相关文件赋予tomcat权限并且重启服务
+chown -R tomcat:tomcat /appHome /appLogs
+
+
+netstat 显示网络状态
+通过进程号查看端口
+netstat -anpl | grep 18802
+
+find / -name XXX
+
+查看内存占用信息
+free -m
+
+查看cpu信息 程序占用
+ps aux|head -1;
+ps aux|grep -v PID|sort -rn -k +4|head 
+
+清空文字内容
+cat /dev/null > access.log  oder cp /dev/null > access.log
+echo "" > access.log oder echo > access.log
+
+for i in {10.228.209.192,10.228.208.211,10.228.210.107,10.228.210.233}; 
+do ssh $i "ps -ef|grep nginx";done
+
+比较两个文件差异
+diff new_ccpc old_ccpc
+
+Shell语法
+echo "Shell 传递参数实例！";
+echo "第一个参数为：$1";
+echo "参数个数为：$#";
+echo "传递的参数作为一个字符串显示：$*";
+
+执行脚本，输出结果如下所示：
+$ chmod +x test.sh 
+$ ./test.sh 1 2 3
+Shell 传递参数实例！
+第一个参数为：1
+参数个数为：3
+传递的参数作为一个字符串显示：1 2 3
+
+linux环境下执行jar包
+nohup java -jar babyshark-0.0.1-SNAPSHOT.jar > log.file 2>&1 &
+关闭进程
+ps -aux | grep java
+kill -9 pid(进程号)
+
+
+&  表示任务在后台执行，如要在后台运行redis-server,则有  redis-server &
+
+&& 表示前一条命令执行成功时，才执行后一条命令 ，如 echo '1‘ && echo '2'    
+
+| 表示管道，上一条命令的输出，作为下一条命令参数，如 echo 'yes' | wc -l
+
+|| 表示上一条命令执行失败后，才执行下一条命令，如 cat nofile || echo "fail"
+
+(1).Linux前台进程与后台进程的区别
+
+前台进程：是在终端中运行的命令，那么该终端就为进程的控制终端，一旦这个终端关闭，这个进程也随之消失。
+
+后台进程：也叫守护进程（Daemon），是运行在后台的一种特殊进程，不受终端控制，它不需要终端的交互；Linux的大多数服务器就是使用守护进程实现的。比如Web服务器的httpd等。
+
+(2).进程的前台与后台运行
+
+与系统任务相关的几个命令（了解）：
+
+& 用在一个命令的最后，可以把这个命令放到后台执行
+<Ctrl>+z 将一个正在前台执行的命令放到后台，并暂停
+jobs 查看当前有多少在后台运行的进程。这是一个作业控制命令
+fg(foregroud process) 将后台中的命令调至前台继续运行。如果后台中有多个命令，可以用fg [jobnumber]将选中的命令调出，jobnumber是通过jobs命令查到的后台正在执行的命令的序号（不是pid）
+bg(backgroud process) 将一个在后台暂停的命令，变成继续执行。如果后台中有多个命令，可以用bg %jobnumber将选中的命令调出，%jobnumber是通过jobs命令查到的后台正在执行的命令的序号（不是pid）
+(3).&的使用
+
+如果直接使用&，部分命令仍然在前台显示，例如"ping 127.0.0.1 &"。此时我们可以使用nohup命令帮助，"nohup ping 127.0.0.1 &"，在执行时会创建一个nohup.out的文件。
+
+一、&
+加在一个命令的最后，可以把这个命令放到后台执行，如
+
+watch  -n 10 sh  test.sh  &  #每10s在后台执行一次test.sh脚本
+
+二、ctrl + z
+可以将一个正在前台执行的命令放到后台，并且处于暂停状态。
+
+三、jobs
+查看当前有多少在后台运行的命令
+
+jobs -l选项可显示所有任务的PID，jobs的状态可以是running, stopped, Terminated。但是如果任务被终止了（kill），shell 从当前的shell环境已知的列表中删除任务的进程标识。
+
+四、fg
+将后台中的命令调至前台继续运行。如果后台中有多个命令，可以用fg %jobnumber（是命令编号，不是进程号）将选中的命令调出。
+
+五、bg
+将一个在后台暂停的命令，变成在后台继续执行。如果后台中有多个命令，可以用bg %jobnumber将选中的命令调出。
+
+六、kill
+法子1：通过jobs命令查看job号（假设为num），然后执行kill %num
+法子2：通过ps命令查看job的进程号（PID，假设为pid），然后执行kill pid
+前台进程的终止：Ctrl+c
+
+七、nohup
+如果让程序始终在后台执行，即使关闭当前的终端也执行（之前的&做不到），这时候需要nohup。该命令可以在你退出帐户/关闭终端之后继续运行相应的进程。关闭终端后，在另一个终端jobs已经无法看到后台跑得程序了，此时利用ps（进程查看命令）
+
+ps -aux | grep "test.sh"  #a:显示所有程序 u:以用户为主的格式来显示 x:显示所有程序，不以终端机来区分

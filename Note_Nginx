@@ -1,0 +1,223 @@
+Note_Nginx
+
+Nginx日志参数含义:
+
+1.log_format main  
+'$server_name $remote_addr - $remote_user [$time_local] "$request" ' 
+'$status $uptream_status $body_bytes_sent "$http_referer" ' 
+'"$http_user_agent" "$http_x_forwarded_for" "$request_time" ' 
+'$ssl_protocol $ssl_cipher $upstream_addr $request_time $upstream_response_time'
+'$http_host';
+
+$server_name 虚拟主机名称;
+
+$remote_addr (client_IP) 远程客户端的IP地址; proxy_set_header X-Real-IP $remote_addr; <-在nginx配置中的代码,若是链式代理结构,通常位于第一台nginx反向代理服务器; 
+
+$http_x_forwarded_for 记录经过的nginx反向代理服务器的ip地址;
+
+$remote_user 远程用户登录客户端的名称或者ip地址 如百度用户chuikokching;
+
+$time_local (timestamp) 26/Nov/2020:23:26:17 +0800 "+0800"表示服务器所处时区位于UTC之后的8小时
+
+$request_time 记录整个请求的总时间
+
+$request (request_time) "GET /uk_data/headImg/thumbnail/2020/5/11/6169613a0649f6128f1c767b3af23ff5.jpg HTTP/1.1" 记录请求的URI和HTTP协议 *the most valuable
+
+method:Get
+request_uri:/uk_data/headImg/thumbnail/2020/5/11/6169613a0649f6128f1c767b3af23ff5.jpg 
+httpversion:HTTP/1.1
+
+$status 记录请求返回的http状态码 200='successfully'
+
+$upstream_addr 记录到达后台服务器集群的地址
+
+$uptream_status 记录upstream状态 比如成功是200.
+
+$upstream_response_time 记录请求过程中upstream的响应时间
+
+$http_referer 记录请求从哪里来 比如友情链接 能够统计有多少访问来自于其他友情网站链接
+
+$http_user_agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3100.0 Safari/537.36" 记录用户访问工具 能区分出是爬虫还是浏览器
+
+Mozilla/5.0 出于对历史原因的尊重,大家都会默认填写该部分
+(Windows NT 10.0; Win64; x64) 平台
+AppleWebKit/537.36 (KHTML, like Gecko) 引擎版本
+Chrome/60.0.3100.0 Safari/537.36 浏览器版本号
+
+$body_bytes_sent 发送给客户端的文件主体内容的大小 比如1201 可以将每条日志记录中的这个值累加起来以粗略估计服务器吞吐量。
+
+$ssl_protocol SSL协议版本 比如TLSv1
+
+$ssl_cipher 交换数据中的算法 比如RC4-SHA
+
+
+windows修改域名文件host:
+Windows/system32/drivers/etc/host
+
+linux:
+etc/hosts
+
+修改tomcat端口 server.xml 
+tomcat8081/apache-tomcat-7.0.XXXX/webapps/ + 文件路径 + 文件  #具体url请求中也包含文件路径+文件 (a.html -> 显示8081)
+tomcat8080/apache-tomcat-7.0.XXXX/webapps/ + 文件路径 + 文件  #具体url请求中也包含文件路径+文件 (a.html -> 显示8080) 
+比如:apache-tomcat-7.0.XXXX/webapps/edu/a.html
+apache-tomcat-7.0.XXXX/bin ./startup.sh 启动tomcat
+
+正向代理：
+1.正向代理服务是由客户端设立的
+2.实现突破访问权限，提高访问的速度，对目标服务器隐藏客户端的ip地址
+3.如访问google.com 网页客户端挂代理 proxy->google
+
+反向代理：
+1.反向代理服务是由服务端设立的
+2.达到负载均衡，并且可以隐藏服务器真正的ip地址和访问端口
+
+Client----> Nginx(Port:9001) ----> Server(Port:8001)
+
+
+安装nginx后,通常需要在防火墙中添加端口
+firewall-cmd --list-all #查看防火墙端口
+sudo firewall-cmd --add-port=8001/tcp --permanent #添加通过端口
+firewall-cmd reload #重启防火墙
+
+nginx常用命令：
+./nginx -v #查看版本
+./nginx -s stop #停止
+./nginx #启动
+./nginx -s reload #重新启动
+
+*nginx文件结构配置：
+全局块
+从配置文件到events之间,设置nginx服务器整体运行的配置指令
+worker_processes 4; 值越大,并发处理量越多
+
+Events块
+nginx服务器与用户的网络连接
+worker_connections 1024; 支持最大的连接数
+
+http块
+http全局块
+
+server块
+server{
+	listen 80;
+	server_name 192.168.17.129; #访问域名
+
+	location / {
+	    root html;
+	    proxy_pass http://127.0.0.1:8080; #配置代理服务器
+	    index index.html index.html;
+	}
+}
+
+等号表示路径要一样 比如：http://192.168.17.129:9001/member/myAddress.json
+* = /member/myAddress.json
+* = /order/confirm
+
+~ /edu/[a-zA-Z]{2,4} + / $ 表示路径中含有/edu/,能够匹配到
+
+server{
+	listen 9001;
+	server_name 192.168.17.129; #访问域名
+	location ~ /edu/ {
+		proxy_pass http://127.0.0.1:8080;   #http://192.168.17.129:9001/edu/a.html
+	}
+
+	location ~ /vod/ {
+		proxy_pass http://127.0.0.1:8081;   #http://192.168.17.129:9001/vod/a.html
+	}
+}
+
+负载均衡：
+Leistungstranzparenz:Lastverteilung
+
+
+#具体请求例子: http://192.168.17.129/edu/a.html,请求url中需要带上具体资源地址路径以及资源文件
+upstream test{
+    ip_hash;
+	server 192.168.17.129:8080 weight=5;
+	server 192.168.17.129:8081 weight=10;
+}
+
+server{
+	listen 80;
+	server_name 192.168.17.129;
+
+	access_log 路径/xxx.log main;
+	error_log 路径/xxx.log;
+
+	location /{
+		proxy_pass http://test;
+	}
+}
+
+Nginx分配策略:
+1.轮询
+每个请求按照时间顺序逐一分配到不同的后端服务器,如果后端服务器down,能自动剔除
+
+2.weight
+默认是1,权重越高,分配的客户端就越多
+
+3.ip_hash
+每个请求按照访问ip的hash结果分配,每个访客多次访问的话都会固定访问一个后端服务器,可以解决session的问题
+
+4.fair
+按后端服务器的响应时间来分配请求,响应时间短的优先分配
+
+
+动静分离：
+动态资源(jsp,servlet)和静态资源(html,css,js,图片)分开部署
+收到对应的请求时nginx专门访问各自的动态资源或静态资源服务器
+加快网站解析速度,降低单个服务器压力
+
+通过location指定不同的后缀名实现不同的请求转发,在location里面设置expires参数 给一个资源设定一个过期时间,无需服务端验证,直接通过浏览器自身确认是否过期,不产生额外的流量  适合不经常变动的资源 比如 expires=3d, 表示3天之内访问这个URL,发送一个请求,对比服务器该文件的最后更新时间,若没有变化,则不会从服务器抓取,返回304,如果有更新 则从服务器下载 返回200.
+
+#请求静态资源
+文件路径:
+data/www/a.html, data/image/a.html
+server{
+	listen 80;
+	server_name 192.168.17.129; #访问域名
+	location /www/ {
+	    root /data/;  #http://192.168.17.129/www/a.html 有访问时,返回/data/www/a.html, 即用/data 加上 /www
+		index index.html index.htm;  
+	}
+
+	location /image/ {
+	    root /data/;  #http://192.168.17.129/image/01.jpg
+		autoindex on; #列出当前文件夹的内容 
+	}
+}
+
+文件路径:
+data/a.html
+server{
+	listen 80;
+	server_name 192.168.17.129; #访问域名
+	location /www/ {
+	    alias /data/;  #http://192.168.17.129/www/a.html 有访问时,返回/data/a.html, 即用/data 替换 /www
+		index index.html index.htm;  
+	}
+
+	location /image/ {
+	    alias /data/;  #http://192.168.17.129/image/01.jpg
+		autoindex on; #列出当前文件夹的内容 
+	}
+}
+
+
+
+Nginx原理: Master,Worker(可以含有多个)
+
+请求先到Master,Master分配任务给Worker,Worker通过唤醒线程池空闲的线程机制获得请求,Worker进行反向代理或者动静分离,取得资源后传递到tomcat服务器进行操作
+
+(1).每个worker都是独立的进程,不用加锁,节省了锁带来的开销,防止因一个worker报错而导致服务中断
+(2).热部署 被占用的worker进程会处理完当前工作再重新加载新的配置
+(3).worker数和服务器cpu数相等最为合适 4核=4个
+worker_processes 4
+worker_cpu_affinity 00000001 00000010 00000100 00001000 4worker绑定8cpu中的4个
+worker_connections 1024
+一个请求占用的连接数 2或4(一来一回)
+普通静态资源最大并发数 worker_processes*worker_connections /2
+动态资源反向代理最大并发数 worker_processes*worker_connections /4
+

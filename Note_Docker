@@ -1,0 +1,75 @@
+1.Docker is what?
+Docker 是用来装程序及其环境的容器,属于linux容器的一种封装,提供简单易用的容器使用接口.
+比如 不仅可以把jar包打包,还可以把jvm运行环境以及环境配置打包
+
+2.why do we need docker?
+环境配置问题(不兼容问题) 
+虚拟机(完整的系统)虽然也可以解决环境配置问题,但占用资源多,启动慢
+linux容器(docker基础) 对进程进行隔离 体积小
+
+作用：
+1.提供统一的环境
+2.快速拓展,弹性伸缩云服务
+3.防止其他用户的进程把服务器资源占用过多(比如 打游戏 有人下电影 占用大量带宽)
+
+特点：
+1.标准化：运输方式(程序和环境从一个机器运到另外一个机器),存储方式(程序和环境的存储),API接口(不需要tomcat,rabbitMQ等应用命令 同样的命令控制所有应用)
+2.灵活：集装箱化
+3.轻量级：容器利用并共享主机内核
+4.便携式：可以本地构建,部署到云,在任何地方运行
+
+Build image(our docker image)->Image registry->1.Integrationtest, 2.Acceptancetests, 3.Capacitytests, 4.PreProduction, 5.Production
+
+结构：
+client->  Docker_Host(服务) (包含Docker daemon, Containers, Images)  ------ Registry(镜像仓库)
+
+Images 产生实例 (实例在容器Container里面)
+
+3个核心：
+Images Container Repositories
+
+Images(类似java的类,静态的定义): UnionFS 联合文件系统(文件目录的树形层次结构) Image直接拥有相同的底层 比如ES JVM Ubuntu, 不同的image只需要添加个性化或自定义的层(如 环境变量 配置文件) 他们都继承于同一个底层 只是上层建筑有所不同.
+
+Container(类似java里的实例,运行时候的实体):容器这一层可以修改,而镜像是不可以修改的 同一个镜像可以生成多个容器独立运行,而他们之间没有干扰
+
+Repositories(类似百度网盘)：hub.docker.com c.163yun.com/hub#/home
+
+Client:
+客户终端,输入docker命令管理服务器
+
+Deamon:
+守护进程,接收client发送的命令并执行
+
+命令：
+下载
+docker pull [OPTIONS] NAME[:TAG]   #下载镜像 docker pull hub.c.163.com/library/nginx:1.13.0
+docker images [OPTIONS][REPOSITORY[:TAG]]   #查看镜像
+
+运行命令 []为可选
+docker run [OPTIONS] IMAGE [COMMAND][ARG] #docker run hub.c.163.com/library/nginx:1.13.0
+docker run -d hub.c.163.com/library/nginx:1.13.0 #后台运行 和 终端无关 会返回容器ID
+
+停止docker
+docker stop 容器id
+
+查看docker进程
+docker ps
+
+查看docker内部 类似ssh (-it：内部终端映射到当前终端 bash:启动终端)
+docker exec -it 容器ID bash
+which nginx #/usr/sbin/nginx
+
+3种网络模式
+1.Bridge:和外面的宿主机进行通信 但是两个独立的网络 虚拟出独立的网卡 ip等
+端口映射： 外部端口 映射 内部端口   访问 (域名：8080)
+docker run -d -p 8080:80 hub.c.163.com/library/nginx:1.13.0
+netstat -anpl | grep 8080 #需要开安全组 8080 0.0.0.0/0
+
+docker run -d -P hub.c.163.com/library/nginx:1.13.0 #自主分配端口
+
+2.Host:不会获得独立的网络 和主机使用同一个网络
+3.None:没有网络
+
+
+
+
