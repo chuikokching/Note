@@ -1,0 +1,24 @@
+Rest是理念，Restful是符合Rest理念的开发风格
+
+1. URI 作为资源Resources传递
+2. 通过http 4个动作对服务端进行操作 get,post,put,delete
+3. 只返回json,xml (*)
+4. 客户端和服务器之间,客户端操作服务端,让服务端发生State Transfer,这种转化建立在表现层(Resources)之上.
+
+Korrekt
+
+URI
+GET /articles?au=lily
+
+Falsch
+
+URI
+GET /a/1   必须具有语义 GET /student/1
+POST /createArticle/1 必须使用名词 POST /article/1
+GET /articles/author/1 不超2级,扁平化 GET /articles/(author)?id=1
+DELETE /articles/1 名词区分单复数 DELETE /article/1
+
+SOAP偏向于面向活动,同时SOAP强调操作方法和操作对象的分离，有WSDL文件规范和XSD文件分别对其定义。如果有严格的规范和标准定义要求，而且前期规范标准需要指导多个业务系统集成和开发的时候，SOAP风格由于有清晰的规范标准定义是明显有优势的。
+REST强调面向资源，只要我们要操作的对象可以抽象为资源即可以使用REST架构风格。简单数据操作，无事务处理，开发和调用简单这些是使用REST架构风格的优势
+
+由于没有类似于SOAP的权威性协议作为规范，REST实现的各种协议仅仅只能算是私有协议，但是这样细节方面有太多没有约束的地方，通用性不高。 SOAP通用性较高
