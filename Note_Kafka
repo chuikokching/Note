@@ -52,6 +52,8 @@ DMS(Kafka)
 
 生产者(把数据推送给broker中的topic) -> Zookeeper集群,保存着Kafka相关的一些数据,比如offset,以及broker的集群状态 Kafka集群当中含有多个broker1,2,3,从而实现负载均衡以及容错 每个对应一个Kafka进程 -> 消费者组(从broker的topic当中提取数据) 1个消费者组可以含有多个消费者,而且一个消费者组拥有唯一ID,组内消费者一起消费订阅主题的所有分区(partition)信息
 
+Zookeeper(kafka(broker(topic(partition))))
+
 topic可以按照业务逻辑来组织 比如支付消息 商品消息 一个topic可包含多个partition,一个topic中的消息可以分布在topic的不同partition中
 
 partition 0:0 1 2 3 4 5 6
@@ -59,3 +61,33 @@ partition 1:0 1 2
 partition 2:0 1 2 3 
 partition 3:0 1 2 3 4 5
 offset记录每个消费者的偏移量,下次重启时能继续拉取信息,无需在原partition重新开始 *在分区中才有意义,分区间没意义
+
+
+#Kafka命令
+增加主题 
+查看主题
+删除主题
+查看数据堆积量
+
+新建topic 华为云 现网新增业务topic 根据名称新建topic
+ru-cbg-ccpc-kafka   partition 6(比应用实例要多) replicas 3 aging time 168 
+查看主从库 master-server-id (主库ip地址)
+/data/mycat/bin/mycat restart
+tail -100f wrapper.log   #检查mycat是否重启成功
+
+发包后在跳板机上(200.200)用curl脚本语句验证ccpc,ccpcsp启动是否成功
+!1019-!1025 #方便快捷 
+在ccpcsp新发包的机器(212.84)上用curl(kafka topic专用检测语句)脚本语句验证新topic启动是否成功
+在华为云ru-cbg-ccpc-kafka message query当中能看到对应刚才测试topic的partition数量
+
+德国在kafka机器bin文件夹中执行增加主题命令
+同样在新发包的机器ccpcsp机器中运行专用检测topic的curl语句
+kafka(没上云)集群验证(message query) consumeroffsetchecker 
+发包后在跳板机上(120.4)用curl脚本语句验证ccpc,ccpcsp启动是否成功
+
+
+#kafka部署：
+修改 kafka2.0.1/config/server.properties文件中ip地址信息，包括kafka和zookeeper的
+启动zookeeper，启动kafka
+./start_zk.sh
+./start_kafka.sh
