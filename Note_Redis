@@ -1,0 +1,132 @@
+Redis: Key-Value型NoSQL数据库 (类似java Map)
+数据存储到内存中(RAM),也可以在磁盘持久化(关机并不会丢失数据)
+
+Features:
+(1). 速度快
+(2). 广泛的语言支持
+(3). 持久化
+(4). 多种数据结构或类型
+(5). 主从复制
+(6). 分布式(在多个地区都有服务器,能就近访问)与高可用(哨兵机制)
+
+安装redis
+yum install gcc(make依赖于这个命令,对程序进行编译)
+
+wget http://..../redis-5.0.2.tar.gz
+tar -xvzf redis-5.0.2.tar.gz
+cd redis-5.0.2
+make
+
+启动redis
+redis.conf文件提供了关于redis的基础配置
+cd src
+redis-server #启动命令
+redis-cli #客户端连接
+./src/redis-server redis.conf #启动命令
+
+redis.conf中的基础配置
+daemonize | daemonize yes | 是否后台运行,默认no
+port 默认端口6379
+logfile | logfile日志文件 | 设置日志文件
+databases | databases 255 | 设置数据库总量 (以编号的形式来决定数据库)
+dir | dir数据文件目录 | 数据文件存储目录
+requirepass |requirepass 12345 | 设置密码
+
+vim redis.conf
+daemonize yes #作为服务后台运行 
+netstat -tulpn #查看当前系统被占用的端口 验证是否启动成功
+
+kill -9 PID #终止服务(不推荐)
+
+redis-cli -h 127.0.0.1 -p 6379 -a "mypass" #远程服务方式client启动
+./src/redis-cli #本地client启动
+127.0.0.1: 6379> ping #测试服务是否正常启动
+127.0.0.1: 6379> exit #退出client
+
+./src/redis-cli shutdown #用client终止redis server服务
+netstat -tulpn #查看当前系统被占用的端口 验证是否关闭成功
+
+logfile "redis.log" #日志输出的文件名
+
+在redis.conf中修改port 6380后再重新启动redis-server redis.conf
+./src/redis-cli -p 6380 #启动新client
+select 0 #选择数据库
+select 15 #选择数据库
+auth 12345 #验证密码 或者启动时使用 -a "12345"
+
+dir #数据文件保存目录
+dump.rdb #redis的全量备份
+
+Redis通用命令
+set name lily #设置Key=name, Value=lily 多次set会覆盖之前的值
+get hello #获取Key=hello的数据
+keys he* #根据Pattern表达式查询符合条件的key  keys *
+dbsize #返回key总数 类似count(*)
+exists a #检查Key=a是否存在 存在返回1 不存在返回0
+del a #删除Key=a的数据
+expire hello 20 #设置Key=hello 20秒后过期 到期redis自动销毁
+ttl hello #查看Key=hello的剩余时间
+mset hello world java best #一次性设置多个值
+mget mget hello java #一次性获取多个值
+incr/decr age #Key=age值自增或者自减1
+incrby/decrby count 99 #Key自增自减指定步长
+
+
+Redis数据类型
+String 字符串类型
+Hash Hash类型(key为Hash类型)
+List 列表类型
+Set 集合类型(元素不允许重复)
+Zset 有序集合类型
+
+Hash存储结构化数据 在value当中又产生键值对
+Hash类型命令
+hget emp:1 age
+hset emp:1 age 23
+hmset emp:1 age 30 name GG
+hmget emp:1 age name
+hgetall emp:1
+hexists emp:1 name #检查是否存在
+hlen emp:1 #检查指定长度
+hdel emp:1 age 
+
+List类型命令
+rpush list c #输出1 
+lrange list 0 -1 #输出list内容直到末尾
+rpush list b g #输出3
+lrange list 0 -1 #输出cbg
+lpush list i t #输出5
+rpop list #弹出右边第一个元素
+lpop list #弹出左边第一个元素
+
+Set类型命令 集合成员是唯一的
+Set为无序集合
+ZSet为有序集合 
+sadd set1 a #创建集合set1 返回1表示语句执行成功
+smembers set1 #输出a
+sadd set1 b
+sadd set1 c
+sadd set1 e
+sadd set1 f 
+smembers set1 #输出无序集合 b c a f e
+
+sadd set2 a #创建集合set1 返回1表示语句执行成功
+sadd set2 z
+sadd set2 b
+sadd set2 g
+sadd set2 y
+sinter set1 set2 #取交集
+sunion set1 set2 #取并集
+sdiff set1 set2 #取差集
+
+zadd zset1 100 A
+zadd zset1 101 B
+zadd zset1 102 C
+zadd zset1 103 D
+zadd zset1 104 F
+zadd zset1 99 E
+zrange zset1 0 -1 withscores
+E 99 a 100 b 101 d 102 e 103 f 104
+zrangebyscore zset1 100-103
+a b c d 
+
