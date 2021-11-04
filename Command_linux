@@ -1,6 +1,5 @@
-查看cent OS版本
+查看centOS版本
 cat /etc/redhat-release
-
 
  ? 匹配单个字符
  rm libby1?.jpg 
@@ -135,10 +134,32 @@ scp -r /home/space/music/ www.runoob.com:/home/root/others/
 scp -r www.runoob.com:/home/root/others/ /home/space/music/
 scp -r local_folder remote_username@remote_ip:remote_folder
 
-pscp windows和linux之间传输文件
+pscp 多台服务器之间传输文件
 pssh -h list.ip -i "mkdir -p pictures/personal/family" (用于多台服务器并发执行相同的命令并输出)
 -i 每个主机执行完毕后显示标准输出和标准错误
 -h host_file 从host_file文件中读取需要连接的ip信息
+pssh -h ipchecklist -P "curl ifconfig.me" >result.txt
+    //pssh 命令选项
+        --version：查看版本
+        --help：查看帮助，即此信息
+        -h：主机文件列表，内容格式”[user@]host[:port]”
+        -H：主机字符串，内容格式”[user@]host[:port]”
+        -：登录使用的用户名
+        -p：并发的线程数【可选】
+        -o：输出的文件目录【可选】
+        -e：错误输入文件【可选】
+        -t：TIMEOUT 超时时间设置，0无限制【可选】
+        -O：SSH的选项
+        -v：详细模式
+        -A：手动输入密码模式
+        -x：额外的命令行参数使用空白符号，引号，反斜线处理
+        -X：额外的命令行参数，单个参数模式，同-x
+        -i：每个服务器内部处理信息输出
+        -P：打印出服务器返回信息
+    //curl ifconfig.me
+        查询本机外网出口ip
+    //>filesname
+        将结果写入新文件
 
 mv on_floor_04.jpg on_floor 移动文件到文件夹
 mv liebermans/ lieberman_pool/ 重命名
@@ -265,6 +286,15 @@ mkdir $(date '+%Y-%m-%d') #2020-10-27
 
 cat 拼接
 cat 文件路径 | grep XXXX > temp.log #常用 实用
+cat result.txt | grep "159.138.204.195\|159.138.206.202\|159.138.202.9\|159.138.205.19" > matched_ecs.txt
+//查询命令的条件查询
+grep的AND，多条件的与查询 grep "pattern1"|grep "patttern2" //使用管道符连接多个grep命令就可以得到多个条件同时满足才能查询出来的结果
+grep的OR，多条件的或查询 grep "pattern1\|pattern2" //使用转义字符将管道符转为'或'符号
+grep的NOT，非查询 grep -v "pattern1"
+grep -B #显示行数
+grep -R #recursive
+
+
 cat text.txt #打印txt到输出设备上
 cat -n text1.txt text2.txt #拼接并且输出 (带行号)
 
@@ -306,7 +336,7 @@ less -N Paradise_Lost.txt (查看长文件,更多功能用到再搜索)
  head -c 100k text1.txt text2.txt
 
  tail 查看文件后10行(用法和head类似)
- tail -f text1.txt 循环读取查看
+ tail -100f text1.txt 循环读取查看
 
  chgrp 修改文件用户组权限
  $ touch new_script.sh 
@@ -354,9 +384,9 @@ useradd tomcat 重新新建
 chown -R tomcat:tomcat /appHome /appLogs
 
 
-netstat 显示网络状态
-通过进程号查看端口
+netstat #显示网络状态 通过进程号查看端口 查看当前系统被占用的端口
 netstat -anpl | grep 18802
+netstat -tupln | grep redis
 
 find / -name XXX
 
@@ -364,8 +394,8 @@ find / -name XXX
 free -m
 
 查看cpu信息 程序占用
-ps aux|head -1;
-ps aux|grep -v PID|sort -rn -k +4|head 
+ps aux | head -1;
+ps aux | grep -v PID|sort -rn -k +4|head 
 
 清空文字内容
 cat /dev/null > access.log  oder cp /dev/null > access.log
@@ -455,8 +485,74 @@ jobs -l选项可显示所有任务的PID，jobs的状态可以是running, stoppe
 ps -aux | grep "test.sh"  #a:显示所有程序 u:以用户为主的格式来显示 x:显示所有程序，不以终端机来区分
 
 
+telnet 测试指定端口的连通性 (ctrl+] 终止命令)
+Make a HTTP request to a web server on TCP port 80:
+$ telnet www.example.com 80
+GET /path/to/file.html HTTP/1.1
+Host: www.example.com
+Connection: close 
+
 软连接和硬链接
 软连接：类似windows中的快捷方式,存储着源文件的位置信息便于指向.
 硬链接：类似C当中的指针,修改硬链接文件能同步更新源文件. 删除一个指针不会真正删除文件，只有把所有的指针都删除才会真正删除文件. 实际上硬链接和源文件是同一份文件,拥有相同的inode值.
+ln -s log2013.log link2013 #给文件创建软链接, 为log2013.log文件创建软链接link2013, 如果log2013.log丢失, link2013将失效
+
+
+xargs 命令组合工具
+ps -aux | grep ping6 | cut -c 9-15 | xargs kill -9
+cut -c 9-15是截取上面输出的结果中的进程号, 9-15正好是进程号
+xargs命令可以通过管道接受字符串, 并将接收到的字符串通过空格分割成许多参数(默认情况下是通过空格分割) 然后将参数传递给其后面的命令, 作为后面命令的命令行参数.
+kill和rm这样的命令是不会处理管道等过来的标准输入的, 用xargs来组合命令.
+
+awk 文本分析工具
+2 this is a test
+3 Are you like awk
+This's a test
+10 There are orange,apple,mongo
+
+awk '{print $1,$4}' log.txt
+ 2 a
+ 3 like
+ This's
+ 10 orange,apple,mongo
+
+ # 格式化输出
+ $ awk '{printf "%-8s %-10s\n",$1,$4}' log.txt
+ ---------------------------------------------
+ 2        a
+ 3        like
+ This's
+ 10       orange,apple,mongo
+
+ifconfig #查看本机内网ip 本机外网出口ip 子网等信息
+curl ifconfig.me #查看本机公网ip
+
+
+#服务器部署war包 war包放到webapps目录下 进入bin启动startup.sh
+第一步：
+for i in {10.228.208.146,10.228.210.92};do scp /tmp/cmsc_mng.war  $i:/tmp/; done
+第二步：
+for i in {10.228.208.146,10.228.210.92};do ssh $i  "mv /appHome/tomcat/tomcat_cuep_mng/webapps/cmsc_mng.war /appHome/tomcat/tomcat_cuep_mng/webapps/cmsc_mng.war.`date +%Y%m%d`;mv /tmp/cmsc_mng.war /appHome/tomcat/tomcat_cuep_mng/webapps/;chown  -R tomcat:tomcat /appHome/tomcat/tomcat_cuep_mng/webapps/"; done
+第三步：
+for i in {10.228.208.146,10.228.210.92}; do ssh $i "ps aux | grep java | grep /appHome/tomcat | grep -v grep|awk '{print \$2}' | xargs kill -9"; done
+第四步: 
+for i in {10.228.208.146,10.228.210.92};do ssh $i "rm -rf  /appHome/tomcat/tomcat_cuep_mng/webapps/cmsc_mng"; done
+第五步: 
+for i in {10.228.208.146,10.228.210.92};do ssh $i "runuser -l tomcat -c 'sh  /appHome/tomcat/tomcat_cuep_mng/bin/startup.sh'";done
+第六步: 检查状态
+for i in {10.228.208.146,10.228.210.92}; do ssh $i "ps -ef|grep tomcat";done
+
+
+rsyslog #日志管理服务
+systemctl status rsyslog -l
+systemctl stop rsyslog
+
+yum remove rsyslog -y
+yum install rsyslog -y
+systemctl start rsyslog
+systemctl status rsyslog -l
+systemctl enable rsyslog
+https://blog.csdn.net/qfxulei/article/details/107784086
+
 
 
