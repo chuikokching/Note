@@ -25,7 +25,8 @@ Show tables;
 use XXX;
 desc XXX;
 drop table XXX;
-
+show create table XXX;
+show create database XXX;
 
 #查看主从库 读写分离 主库写 从库读   如果是从库,该记录会有输出
 mysql> show slave status\G;
