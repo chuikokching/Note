@@ -361,8 +361,8 @@ select concat(rpad(substring(),length(),"*"),"");
 select e.id,e.name,
    CASE
       when d.name="a" then "p1" 
-	  when d.name="b" then "p2" 
-	  when d.name="c" then "p3" 
+      when d.name="b" then "p2" 
+      when d.name="c" then "p3" 
    END AS place
 from t_tmp e JOIN t_dep d ON e.department_id  = d.department_id;
 
@@ -461,15 +461,15 @@ collation_connection: utf8_general_ci
 DROP PROCEDURE IF EXISTS AddColumnUnlessExists;
 delimiter $$
 CREATE PROCEDURE AddColumnUnlessExists ( IN dbName TINYTEXT, IN tableName TINYTEXT, IN fieldName TINYTEXT, IN fieldDef text , IN commentDef text) BEGIN
-	IF
-		NOT EXISTS ( SELECT * FROM information_schema.COLUMNS WHERE column_name = fieldName AND table_name = tableName AND table_schema = dbName ) THEN
-			
-		SET @ddl = CONCAT( 'ALTER TABLE ', dbName, '.', tableName, ' ADD COLUMN ', fieldName, ' ', fieldDef, ' COMMENT ', commentDef );
-		PREPARE stmt 
-		FROM
-			@ddl;
-		EXECUTE stmt;	
-	END IF;	
+    IF
+        NOT EXISTS ( SELECT * FROM information_schema.COLUMNS WHERE column_name = fieldName AND table_name = tableName AND table_schema = dbName ) THEN
+            
+        SET @ddl = CONCAT( 'ALTER TABLE ', dbName, '.', tableName, ' ADD COLUMN ', fieldName, ' ', fieldDef, ' COMMENT ', commentDef );
+        PREPARE stmt 
+        FROM
+            @ddl;
+        EXECUTE stmt;   
+    END IF; 
 END$$
 delimiter ;
 call AddColumnUnlessExists(DATABASE(), 'sgw_service_signature', 'uuid', 'varchar(50) DEFAULT NULL','"随机生成的uuid"');
@@ -484,4 +484,87 @@ call AddColumnUnlessExists(DATABASE(), 'sgw_signature_verification', 'app_code',
 select count(*),concat(first_name,last_name,profession) AS new_string from promo_user_center_info where first_name is not null AND last_name is not null AND profession is not null group by new_string Having count(*)>=2 limit 100;
 
 select count(*),concat(first_name,last_name,profession) AS new_string from promo_user_center_info group by new_string Having new_string=
+
+
+
+MySQL 8.0 New Features
+
+1.创建用户和用户授权命令需要分开执行：
+    create user 'ckc'@'%' identified by 'chuikokching';
+    grant all privileges on *.* to 'ckc'@'%'
+
+2.默认身份认证插件是caching_sha2_password, 替代了之前的mysql_native_password.
+    show variables like 'default_authentication%'
+    alter user 'ckc'@'%' identified with mysql_native_password by 'chuikokching';
+
+3.密码管理
+    desc mysql.password_history
+
+4.角色管理 (权限的集合, 用户可套用不同角色, 实现用户权限高效管理)
+    create role 'read_role'
+    select * from mysql.user //角色实际上也是用户
+    grant select,insert on *.* to 'read_role'
+    grant 'read_role' to 'ckc'
+    show grants for 'ckc' using 'read_role'
+    show grants for 'read_role'
+    select user(); // 为none,则角色没有激活
+    set role 'read_role' //切换角色后才能查询
+    set default role 'read_role' to 'ckc' //默认登录角色
+    select * from mysql.default_roles;
+    select * from mysql.role_edges; //查看用户角色信息
+    revoke insert on *.* from 'read_role' 
+
+5.隐藏索引 invisible index
+    应用场景：软删除 灰度发布
+    explain select * from t1 where j=1 //查看key字段的值是否为索引,或者为NULL 查询净化器使用索引的情况
+    select @@optimizer_switch => use_invisible_indexed=on
+    set session optimizer_switch="use_invisible_indexed=on"
+    alter table t1 alter index j_idx visible|invisible
+
+6.降序索引 descending index
+    group by 的字段不再进行自动排序 需要添加order by;
+    create table t2(c1 int, c2 int , index idx1(c1 asc, c2 desc)) //提高排序性能 
+    explain select * from t2 order by c1,c2 desc;   
+
+7.函数索引 
+    create index func_idx on t3 ( (UPPER(c2)) );
+    explain select * from t3 where upper(c2)='ABC'  
+    alter table t3 add column c3 varchar(10) generated always as (upper(c1))  
+    create index idx3 on t3(c3)
+    explain select * from t3 where upper(c1)='ABC' //虚拟链
+ 
+8.非递归CTE
+    select * from (select 1) as dt;
+    with cte as (select 1) select * from cte;
+
+    with cte1(id) as (select 1), cte2(id) as (select id+1 from cte1)  
+    select * from cte1 join cte2;
+
+9.递归CTE
+    可用于模拟生成数据
+    with recursive cte(n) as(
+        select 1
+        union all
+        select n+1 from cte where n < 10
+    )
+    select * from cte;
+
+    适用于查询上下级关系链路的场景
+    with recursive employee_paths(id,name,path) as(
+        select id,name,cast(id as char(200)) //基础数据
+        from employees
+        where manager_id is null
+        union all
+        select e.id , e.name, concat(ep.path,',',e.id)
+        from employee_paths as ep join employees as e
+        on ep.id = e.manager_id
+        )
+        select * from employee_paths order by path
+
+    *默认存在递归上限界限
+
+10. 窗口函数 (分析函数) 适合做报表
+    
+
+
 
