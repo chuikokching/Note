@@ -564,7 +564,30 @@ MySQL 8.0 New Features
     *默认存在递归上限界限
 
 10. 窗口函数 (分析函数) 适合做报表
+    select year,country,product,profit,sum(profit) over (partition by country) as c_p from sales order by country,year,product,profit
+    select year,country,product,profit,avg(profit) over (partition by country) as c_p from sales order by country,year,product,profit
     
+    
+11. 专用窗口函数
+    row_number() 显示行号
+    select val, row_number() over (order by val) as 'row_number'
 
+    显示val字段的第一个值
+    first_value(val) over (order by val)
 
+    lead(val,1) 显示每个值后面的一位 2或3...即可跨值显示
+
+    ntile(4) 百分位函数, 按25% 50% 75%来归类每行记录
+
+12. 窗口定义
+    按国家分区显示动态累加的profit总和 10 -> 110 -> 1610
+    select year,country,product,profit,sum(profit) over (partition by country order by profit rows unbounded preceding) as running_total from sales order by country,year,product,profit
+
+    按国家分区显示分块平均值 前后个1条记录,没有默认为0
+    select year,country,product,profit,avg(profit) over (partition by country order by profit rows between 1 preceding and 1 following) as running_total from sales order by country,year,product,profit
+
+    自定义窗口W
+     select year,country,product,profit,first_value(profit) over w as 'first', 
+     last_value(profit) over w as 'last' from sales WINDOW w as (partition by country order by profit rows unbounded preceding) 
+     order by country,profit
 
